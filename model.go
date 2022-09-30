@@ -1,13 +1,14 @@
 package nk
 
-import "net"
+import (
+	"net"
+	"sync"
+)
 
 // Aliases
 
 type Model = string
 type TBusAddress = uint8
-type Destination = uint16
-type Source = uint16
 type Level = uint32
 
 // Structs
@@ -18,29 +19,47 @@ type Router struct {
 	Destinations uint16
 	Sources      uint16
 	Level        Level
+	Matrix       Matrix
 	Conn         net.Conn
 }
 
-type TBusPacketPayload struct {
+type Destination struct {
+	Label  string  `json:"label"`
+	Id     uint16  `json:"id"`
+	Source *Source `json:"source"`
+}
+
+type Source struct {
+	Label string `json:"label"`
+	Id    uint16 `json:"id"`
+}
+
+type nkRoutePacketPayload struct {
 	NK2Header   uint32
 	RTRAddress  TBusAddress
 	UNKNB       uint16
-	Destination Destination
-	Source      Source
+	Destination uint16
+	Source      uint16
 	LevelMask   Level
 	UNKNC       uint8
 }
 
-type TBusPacket struct {
+type nkRoutePacket struct {
 	HeaderA uint32
 	HeaderB uint16
-	Payload TBusPacketPayload
+	Payload nkRoutePacketPayload
 	CRC     uint16
 }
 
 type CrosspointRequest struct {
-	Source      Source
-	Destination Destination
+	Source      uint16
+	Destination uint16
 	Level       Level
 	Address     TBusAddress
+}
+
+type Matrix struct {
+	destinations map[uint16]*Destination
+	sources      map[uint16]*Source
+	mux          sync.Mutex
 }
