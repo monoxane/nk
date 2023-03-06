@@ -21,6 +21,7 @@ type Router struct {
 	Level        Level
 	Matrix       Matrix
 	Conn         net.Conn
+	onUpdate     func(*Destination)
 }
 
 type Destination struct {

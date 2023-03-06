@@ -6,7 +6,7 @@ import (
 	"sort"
 )
 
-func (matrix Matrix) MarshalJSON() ([]byte, error) {
+func (matrix *Matrix) MarshalJSON() ([]byte, error) {
 	log.Print("marshalling matrix")
 	type res struct {
 		Destinations []*Destination `json:"destinations,omitempty"`
@@ -42,7 +42,6 @@ func (matrix *Matrix) SetCrosspoint(dst uint16, src uint16) {
 	matrix.mux.Lock()
 	defer matrix.mux.Unlock()
 	matrix.destinations[dst].Source = matrix.sources[src]
-	log.Printf("%+v %+v", matrix.destinations[dst], matrix.sources[src])
 }
 
 func (matrix *Matrix) GetDestination(dst uint16) *Destination {

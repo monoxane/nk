@@ -187,83 +187,15 @@ func (rtr *Router) parseMultiUpdateMessage(msg []byte) {
 
 func (rtr *Router) updateMatrix(lvl Level, dst uint16, src uint16) {
 	if lvl == rtr.Level {
-		log.Printf("Updating Crosspoint State: DST %2d SRC %2d", dst, src)
+		// log.Printf("Updating Crosspoint State: DST %2d SRC %2d", dst, src)
 		rtr.Matrix.SetCrosspoint(dst, src)
+
+		if rtr.onUpdate != nil {
+			go rtr.onUpdate(rtr.Matrix.GetDestination(dst))
+		}
 	}
 }
 
-// 4e 4b 32 00 02 03 e1 0000004701000
-// 4e 4b 32 00 02 03 e1 00 00 00 47 01 00 00 00 01
-// 0034ff
-// 0035ff
-// 0037ff
-// 0036ff
-// 003aff
-// 003bff
-// 0020ff
-// 001fff
-// 0021ff
-// 0022ff
-// 002aff
-// 002bff
-// 0023ff
-// 0024ff
-// 0031ff
-// 0041ff
-// 0042ff
-// 0043ff
-// 0025ff
-// 0042ff
-// 002eff
-// 0032ff
-// 0033ff
-// 0021ff
-// 003cff
-// 003cff
-// 0004ff
-// 0005ff
-// 002fff
-// 0030ff
-// 002dff
-// 0010ff
-// 0007ff
-// 001dff
-// 0016ff
-// 0016ff
-// 002eff
-// 0033ff
-// 003dff
-// 003dff
-// 0002ff
-// 0003ff
-// 000eff
-// 000fff
-// 001dff
-// 001eff
-// 0011ff
-// 0006ff
-// 003aff
-// 003bff
-// 000fff
-// 003dff
-// 0002ff
-// 0003ff
-// 000fff
-// 003dff
-// 0017ff
-// 0001ff
-// 0031ff
-// 0016ff
-// 0000ff
-// 0018ff
-// 000cff
-// 0016ff
-// 0036ff
-// 0045ff
-// 0047ff
-// 0047ff
-// 0000ff
-// 000eff
-// 0001ff
-// 0010ff
-// cdbe
+func (rtr *Router) SetOnUpdate(notify func(*Destination)) {
+	rtr.onUpdate = notify
+}
