@@ -2,12 +2,10 @@ package nk
 
 import (
 	"encoding/json"
-	"log"
 	"sort"
 )
 
 func (matrix *Matrix) MarshalJSON() ([]byte, error) {
-	log.Print("marshalling matrix")
 	type res struct {
 		Destinations []*Destination `json:"destinations,omitempty"`
 		Sources      []*Source      `json:"sources,omitempty"`
@@ -16,7 +14,7 @@ func (matrix *Matrix) MarshalJSON() ([]byte, error) {
 	var result res
 
 	for _, dst := range matrix.destinations {
-		if dst != nil {
+		if dst != nil && dst.Id != 0 {
 			result.Destinations = append(result.Destinations, dst)
 		}
 	}
@@ -26,7 +24,7 @@ func (matrix *Matrix) MarshalJSON() ([]byte, error) {
 	})
 
 	for _, src := range matrix.sources {
-		if src != nil {
+		if src != nil && src.Id != 0 {
 			result.Sources = append(result.Sources, src)
 		}
 	}

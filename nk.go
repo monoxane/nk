@@ -74,6 +74,8 @@ func New(IP string, RTRAddress uint8, model Model) *Router {
 		}
 	}
 
+	rtr.Matrix.sources[0].Setlabel("DISCONNECTED")
+
 	for i := 0; i < int(rtr.Destinations)+1; i++ {
 		rtr.Matrix.destinations[uint16(i)] = &Destination{
 			Id:    uint16(i),
