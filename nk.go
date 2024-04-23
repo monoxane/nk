@@ -74,7 +74,7 @@ func New(IP string, RTRAddress uint8, model Model) *Router {
 		}
 	}
 
-	rtr.Matrix.sources[0].Setlabel("DISCONNECTED")
+	rtr.Matrix.sources[0].SetLabel("DISCONNECTED")
 
 	for i := 0; i < int(rtr.Destinations)+1; i++ {
 		rtr.Matrix.destinations[uint16(i)] = &Destination{
@@ -96,10 +96,10 @@ func (rtr *Router) LoadLabels(labels string) {
 
 		log.Printf("%+v", columns)
 		if _, ok := rtr.Matrix.destinations[uint16(i+1)]; ok {
-			rtr.Matrix.destinations[uint16(i+1)].Setlabel(columns[1])
+			rtr.Matrix.destinations[uint16(i+1)].SetLabel(columns[1])
 		}
 		if _, ok := rtr.Matrix.sources[uint16(i+1)]; ok {
-			rtr.Matrix.sources[uint16(i+1)].Setlabel(columns[3])
+			rtr.Matrix.sources[uint16(i+1)].SetLabel(columns[3])
 		}
 	}
 }
@@ -193,11 +193,48 @@ func (rtr *Router) updateMatrix(lvl Level, dst uint16, src uint16) {
 		rtr.Matrix.SetCrosspoint(dst, src)
 
 		if rtr.onUpdate != nil {
-			go rtr.onUpdate(rtr.Matrix.GetDestination(dst))
+			go rtr.onUpdate(&Update{
+				Type: "destination",
+				Data: rtr.Matrix.GetDestination(dst),
+			})
 		}
 	}
 }
 
-func (rtr *Router) SetOnUpdate(notify func(*Destination)) {
+func (rtr *Router) UpdateSourceLabel(src int, label string) {
+	if src <= int(rtr.Sources) {
+		rtr.Matrix.GetSource(uint16(src)).SetLabel(label)
+		go rtr.onUpdate(&Update{
+			Type: "source",
+			Data: rtr.Matrix.GetSource(uint16(src)),
+		})
+
+		for _, dst := range rtr.Matrix.destinations {
+			if dst.Source != nil && dst.Source.GetID() == uint16(src) {
+				if rtr.onUpdate != nil {
+					go rtr.onUpdate(&Update{
+						Type: "destination",
+						Data: dst,
+					})
+				}
+			}
+		}
+	}
+}
+
+func (rtr *Router) UpdateDestinationLabel(dst int, label string) {
+	if dst <= int(rtr.Destinations) {
+		rtr.Matrix.destinations[uint16(dst)].SetLabel(label)
+
+		if rtr.onUpdate != nil {
+			go rtr.onUpdate(&Update{
+				Type: "destination",
+				Data: rtr.Matrix.GetDestination(uint16(dst)),
+			})
+		}
+	}
+}
+
+func (rtr *Router) SetOnUpdate(notify func(*Update)) {
 	rtr.onUpdate = notify
 }

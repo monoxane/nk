@@ -48,15 +48,25 @@ func (matrix *Matrix) GetDestination(dst uint16) *Destination {
 	return matrix.destinations[dst]
 }
 
+func (matrix *Matrix) GetSource(src uint16) *Source {
+	matrix.mux.Lock()
+	defer matrix.mux.Unlock()
+	return matrix.sources[src]
+}
+
 func (dst *Destination) GetID() uint16 {
 	return dst.Id
+}
+
+func (dst *Destination) GetIDInt() int {
+	return int(dst.Id)
 }
 
 func (dst *Destination) GetLabel() string {
 	return dst.Label
 }
 
-func (dst *Destination) Setlabel(lbl string) {
+func (dst *Destination) SetLabel(lbl string) {
 	dst.Label = lbl
 }
 
@@ -68,10 +78,14 @@ func (src *Source) GetID() uint16 {
 	return src.Id
 }
 
+func (src *Source) GetIDInt() int {
+	return int(src.Id)
+}
+
 func (src *Source) GetLabel() string {
 	return src.Label
 }
 
-func (src *Source) Setlabel(lbl string) {
+func (src *Source) SetLabel(lbl string) {
 	src.Label = lbl
 }

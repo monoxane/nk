@@ -21,7 +21,7 @@ type Router struct {
 	Level        Level
 	Matrix       Matrix
 	Conn         net.Conn
-	onUpdate     func(*Destination)
+	onUpdate     func(*Update)
 }
 
 type Destination struct {
@@ -63,4 +63,9 @@ type Matrix struct {
 	destinations map[uint16]*Destination
 	sources      map[uint16]*Source
 	mux          sync.Mutex
+}
+
+type Update struct {
+	Type string
+	Data interface{}
 }
