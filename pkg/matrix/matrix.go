@@ -1,9 +1,49 @@
-package nk
+package matrix
 
 import (
 	"encoding/json"
+	"fmt"
 	"sort"
+	"sync"
 )
+
+type Destination struct {
+	Label  string  `json:"label"`
+	Id     uint16  `json:"id"`
+	Source *Source `json:"source"`
+}
+
+type Source struct {
+	Label string `json:"label"`
+	Id    uint16 `json:"id"`
+}
+
+type Matrix struct {
+	destinations map[uint16]*Destination
+	sources      map[uint16]*Source
+	mux          sync.Mutex
+}
+
+func (matrix *Matrix) Init(numDestinations, numSources uint16) {
+	matrix.destinations = make(map[uint16]*Destination)
+	matrix.sources = make(map[uint16]*Source)
+
+	for i := 0; i < int(numSources)+1; i++ {
+		matrix.sources[uint16(i)] = &Source{
+			Id:    uint16(i),
+			Label: fmt.Sprintf("IN %d", i),
+		}
+	}
+
+	matrix.sources[0].SetLabel("DISCONNECTED")
+
+	for i := 0; i < int(numDestinations)+1; i++ {
+		matrix.destinations[uint16(i)] = &Destination{
+			Id:    uint16(i),
+			Label: fmt.Sprintf("OUT %d", i),
+		}
+	}
+}
 
 func (matrix *Matrix) MarshalJSON() ([]byte, error) {
 	type res struct {
@@ -88,4 +128,10 @@ func (src *Source) GetLabel() string {
 
 func (src *Source) SetLabel(lbl string) {
 	src.Label = lbl
+}
+
+func (matrix *Matrix) ForEachDestination(callback func(uint16, *Destination)) {
+	for i, d := range matrix.destinations {
+		callback(i, d)
+	}
 }

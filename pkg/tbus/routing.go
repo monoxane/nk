@@ -1,41 +1,18 @@
-package nk
+package tbus
 
 import (
 	"bytes"
 	"encoding/binary"
-	"fmt"
 	"log"
 
-	"github.com/pkg/errors"
+	"github.com/monoxane/nk/pkg/tbus/crc"
 )
 
-func (rtr *Router) Route(dst uint16, src uint16) error {
-	if dst <= 0 || dst > rtr.Destinations {
-		return fmt.Errorf("requested destination is outside the range available on this router model")
-	}
-
-	if src <= 0 || src > rtr.Sources {
-		return fmt.Errorf("requested source is outside the range available on this router model")
-	}
-
-	xptreq := CrosspointRequest{
-		Source:      src,
-		Destination: dst,
-		Level:       rtr.Level,
-		Address:     rtr.Address,
-	}
-
-	packet, err := xptreq.Packet()
-	if err != nil {
-		return errors.Wrap(err, "unable to generate crosspoint route request")
-	}
-
-	_, err = rtr.Conn.Write(packet)
-	if err != nil {
-		return errors.Wrap(err, "unable to send route request to router")
-	}
-
-	return nil
+type CrosspointRequest struct {
+	Source      uint16
+	Destination uint16
+	Level       Level
+	Address     TBusAddress
 }
 
 // GenerateXPTRequest Just returns payload to send to router to close xpt
@@ -63,7 +40,7 @@ func (xpt *CrosspointRequest) Packet() ([]byte, error) {
 		HeaderA: 0x50415332,
 		HeaderB: 0x0012,
 		Payload: payload,
-		CRC:     crc16(payloadBuffer.Bytes()),
+		CRC:     crc.CRC16(payloadBuffer.Bytes()),
 	}
 
 	packetBuffer := new(bytes.Buffer)

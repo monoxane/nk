@@ -1,7 +1,7 @@
-package nk
+package crc
 
 // Simple 2 byte CRC for XPT payload
-func crc16(buffer []byte) uint16 {
+func CRC16(buffer []byte) uint16 {
 	var crc = 0xFFFF
 	var odd = 0x0000
 
