@@ -56,7 +56,10 @@ func (tbus *TBusGateway) Connect() error {
 	conn, err := net.Dial("tcp", tbus.IP.String()+":5000")
 	if err != nil {
 		nk.Log.Error().Err(err).Msg("unable to connect to tbus gateway")
+
+		return errors.Wrap(err, "unable to connect to tbus gateway")
 	}
+
 	tbus.conn = conn
 	defer tbus.conn.Close()
 
