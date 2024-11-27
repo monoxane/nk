@@ -3,8 +3,8 @@ package tbus
 import (
 	"bytes"
 	"encoding/binary"
-	"log"
 
+	"github.com/monoxane/nk"
 	"github.com/monoxane/nk/pkg/tbus/crc"
 )
 
@@ -33,7 +33,7 @@ func (xpt *CrosspointRequest) Packet() ([]byte, error) {
 	payloadBuffer := new(bytes.Buffer)
 	err := binary.Write(payloadBuffer, binary.BigEndian, payload)
 	if err != nil {
-		log.Println("TBusPacketPayload binary.Write failed:", err)
+		nk.Log.Error().Err(err).Msg("unable pack tbus message into packet")
 	}
 
 	packet := nkRoutePacket{
@@ -46,7 +46,7 @@ func (xpt *CrosspointRequest) Packet() ([]byte, error) {
 	packetBuffer := new(bytes.Buffer)
 	err = binary.Write(packetBuffer, binary.BigEndian, packet)
 	if err != nil {
-		log.Println("TBustPacket binary.Write failed:", err)
+		nk.Log.Error().Err(err).Msg("unable to write packet to tbus gateway")
 	}
 
 	return packetBuffer.Bytes(), nil

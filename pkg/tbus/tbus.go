@@ -5,11 +5,12 @@ import (
 	"encoding/binary"
 	"fmt"
 	"io"
-	"log"
 	"net"
 	"time"
 
 	"github.com/pkg/errors"
+
+	"github.com/monoxane/nk"
 )
 
 var (
@@ -54,13 +55,13 @@ func NewGateway(ip net.IP, onRouteUpdate func(RouteUpdate), onStatusUpdate func(
 func (tbus *TBusGateway) Connect() error {
 	conn, err := net.Dial("tcp", tbus.IP.String()+":5000")
 	if err != nil {
-		log.Fatalln(err)
+		nk.Log.Error().Err(err).Msg("unable to connect to tbus gateway")
 	}
 	tbus.conn = conn
 	defer tbus.conn.Close()
 
 	if _, err = tbus.conn.Write(NK2_CONNECT_REQ); err != nil {
-		log.Printf("failed to send the client request: %v\n", err)
+		nk.Log.Error().Err(err).Msg("unable to write to tbus gateway socket")
 	}
 
 	tbus.onConnect(StatusUpdate{
@@ -99,15 +100,15 @@ func (tbus *TBusGateway) Disconnect() {
 
 func (tbus *TBusGateway) processNKMessage(buffer []byte, length int) {
 	msg := buffer[:length]
-	log.Printf("Processing message of len %d: %x", length, msg)
+	nk.Log.Debug().Int("len", length).Bytes("message", msg).Msg("received tbus message")
 
 	if length == len(NK2_CONNECT_RESP) && bytes.Equal(msg, NK2_CONNECT_RESP) {
-		log.Printf("Successfully Connected")
+		nk.Log.Info().Msg("connected to tbus gateway")
 		tbus.conn.Write(NK_MULTI_STATUS_REQ)
 	}
 
 	if length > 3 && bytes.Equal(msg[:3], NK2_HEADER) {
-		log.Printf("NK Command or Response, CMD: %x", msg[5:7])
+		nk.Log.Debug().Bytes("message", msg[5:7]).Msg("processing tbus cmd or response")
 		if bytes.Equal(msg[5:7], NK_STATUS_RESP) {
 			tbus.parseSingleUpdateMessage(msg)
 		}
